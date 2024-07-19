@@ -1,12 +1,20 @@
 #![feature(try_blocks)]
-
-pub mod handlers;
+#![feature(decl_macro)]
 
 use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
+use std::sync::{Arc, Mutex};
+
 use anyhow::anyhow;
+use axum::Json;
+use axum::response::IntoResponse;
+use once_cell::sync::Lazy;
+use serde::Serialize;
+use sqlx::{MySql, Pool};
+
+pub mod handlers;
 
 pub const DATABASE_NAME: &str = "breakInfo";
 
@@ -14,7 +22,7 @@ pub const DATABASE_NAME: &str = "breakInfo";
 pub struct Args {
     pub mysql_server: String,
     /// Path to MySql credentials file
-    /// 
+    ///
     /// Format:
     /// 1| <username>
     /// 2| <password>
@@ -52,13 +60,53 @@ pub fn read_credentials<P: AsRef<Path>>(path: P) -> io::Result<(String, String)>
         let password = lines.next()?;
         (username, password)
     };
-    let results = credentials.ok_or_else(|| io::Error::other(anyhow!("Malformed credential file")))?;
+    let results =
+        credentials.ok_or_else(|| io::Error::other(anyhow!("Malformed credential file")))?;
     Ok((results.0?, results.1?))
 }
 
-#[macro_export]
-macro_rules! mutex_lock {
-    ($e:expr) => {
-        $e.lock().unwrap()
-    };
+#[derive(Serialize)]
+pub struct ResponseJson<D: Serialize> {
+    data: Option<D>,
+    code: u32,
+}
+
+impl<D: Serialize> ResponseJson<D> {
+    pub fn ok(data: D) -> Self {
+        Self {
+            data: Some(data),
+            code: 0,
+        }
+    }
+
+    pub fn error() -> Self {
+        Self {
+            data: None,
+            code: 1,
+        }
+    }
+}
+
+impl<D: Serialize> IntoResponse for ResponseJson<D> {
+    fn into_response(self) -> axum::response::Response {
+        Json(self).into_response()
+    }
+}
+
+pub struct ApiContextInner {
+    pub db: Pool<MySql>,
+}
+
+pub type ApiContext = Arc<ApiContextInner>;
+
+pub macro mutex_lock($e:expr) {
+    $e.lock().unwrap()
+}
+
+pub macro api_ok($d:expr) {
+    crate::ResponseJson::ok($d).into_response()    
+}
+
+pub macro api_error() {
+    crate::ResponseJson::<()>::error().into_response()
 }
