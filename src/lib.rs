@@ -69,6 +69,7 @@ pub fn read_credentials<P: AsRef<Path>>(path: P) -> io::Result<(String, String)>
 pub struct ResponseJson<D: Serialize> {
     data: Option<D>,
     code: u32,
+    message: Option<String>,
 }
 
 impl<D: Serialize> ResponseJson<D> {
@@ -76,6 +77,7 @@ impl<D: Serialize> ResponseJson<D> {
         Self {
             data: Some(data),
             code: 0,
+            message: None,
         }
     }
 
@@ -83,6 +85,15 @@ impl<D: Serialize> ResponseJson<D> {
         Self {
             data: None,
             code: 1,
+            message: None,
+        }
+    }
+
+    pub fn error_msg<S: Into<String>>(message: S) -> Self {
+        Self {
+            data: None,
+            code: 1,
+            message: Some(message.into())
         }
     }
 }
@@ -107,6 +118,11 @@ pub macro api_ok($d:expr) {
     crate::ResponseJson::ok($d).into_response()    
 }
 
-pub macro api_error() {
-    crate::ResponseJson::<()>::error().into_response()
+pub macro api_error {
+    () => {
+        crate::ResponseJson::<()>::error().into_response()
+    },
+    ($message:expr) => {
+        crate::ResponseJson::<()>::error_msg($message).into_response()
+    }
 }

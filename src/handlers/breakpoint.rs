@@ -7,7 +7,7 @@ use sqlx::{MySql, Row};
 use sqlx::mysql::MySqlRow;
 
 use crate::{api_error, api_ok, ApiContext};
-use crate::handlers::Breakpoint;
+use crate::handlers::Inspection;
 
 pub async fn all_break_reasons(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
     let db = &api_context.db;
@@ -40,12 +40,4 @@ pub async fn all_breakpoints(Extension(api_context): Extension<ApiContext>) -> i
     api_error!()
 }
 
-#[axum::debug_handler]
-pub async fn post_new(Extension(api_context): Extension<ApiContext>, Form(break_info): Form<Breakpoint>) -> impl IntoResponse {
-    let db = &api_context.db;
-    
-    let _: anyhow::Result<()> = try {
-        
-    };
-    api_error!()
-}
+

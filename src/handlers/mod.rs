@@ -14,6 +14,7 @@ mod breakpoint;
 pub mod demo;
 mod machines;
 mod users;
+mod inspection;
 
 static COLLECTED_ROUTES: Lazy<Mutex<Vec<&'static str>>> =
     Lazy::new(|| Mutex::new(Default::default()));
@@ -32,7 +33,7 @@ pub fn router() -> Router {
     add_route!(router, GET "/users", users::all_users);
     add_route!(router, GET "/break/reasons", breakpoint::all_break_reasons);
     add_route!(router, GET "/break/points", breakpoint::all_breakpoints);
-    // add_route!(router, POST "/break", breakpoint::post_new);
+    add_route!(router, POST "/inspection", inspection::post_new);
     router
 }
 
@@ -47,9 +48,10 @@ pub async fn list_routes() -> impl IntoResponse {
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Breakpoint {
+pub struct Inspection {
     pub creator: String,
     machine_number: u32,
+    machine_category: String,
     creation_time: String,
     product_specs: String,
     wire_number: u32,
@@ -60,7 +62,10 @@ pub struct Breakpoint {
     // 0: 拉丝池内断线
     // 1: 非拉丝池内断线
     break_type: u32,
-    break_position: String,
+    // 拉丝池
+    break_position_b: String,
+    // 非拉丝池
+    break_position_a: String,
     // 初检
     break_reason_a: String,
     comments: Option<String>,
