@@ -54,7 +54,7 @@ pub struct Inspection {
     machine_category: String,
     creation_time: String,
     product_specs: String,
-    wire_number: u32,
+    wire_number: Option<u32>,
     break_specs: String,
     copper_wire_no: Option<u32>,
     copper_stick_no: Option<u32>,
@@ -63,9 +63,9 @@ pub struct Inspection {
     // 1: 非拉丝池内断线
     break_type: u32,
     // 拉丝池
-    break_position_b: String,
+    break_position_b: Option<f32>,
     // 非拉丝池
-    break_position_a: String,
+    break_position_a: Option<String>,
     // 初检
     break_reason_a: String,
     comments: Option<String>,
