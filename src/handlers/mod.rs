@@ -34,6 +34,9 @@ pub fn router() -> Router {
     add_route!(router, GET "/break/reasons", breakpoint::all_break_reasons);
     add_route!(router, GET "/break/points", breakpoint::all_breakpoints);
     add_route!(router, POST "/inspection", inspection::post_new);
+    add_route!(router, GET "/inspections", inspection::query_summary);
+    // add_route!(router, GET "/inspection/:id/all");
+    // add_route!(router, PUT "/inspection/:id");
     router
 }
 

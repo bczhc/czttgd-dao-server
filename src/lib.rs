@@ -1,5 +1,6 @@
 #![feature(try_blocks)]
 #![feature(decl_macro)]
+#![feature(yeet_expr)]
 
 use std::fs::File;
 use std::io;
@@ -10,6 +11,7 @@ use std::sync::{Arc, Mutex};
 use anyhow::anyhow;
 use axum::Json;
 use axum::response::IntoResponse;
+use log::debug;
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use sqlx::{MySql, Pool};
@@ -115,14 +117,15 @@ pub macro mutex_lock($e:expr) {
 }
 
 pub macro api_ok($d:expr) {
-    crate::ResponseJson::ok($d).into_response()    
+    crate::ResponseJson::ok($d).into_response()
 }
 
 pub macro api_error {
     () => {
         crate::ResponseJson::<()>::error().into_response()
     },
-    ($message:expr) => {
+    ($message:expr) => {{
+        debug!("Error message:\n{}", $message);
         crate::ResponseJson::<()>::error_msg($message).into_response()
-    }
+    }}
 }
