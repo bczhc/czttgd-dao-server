@@ -7,6 +7,7 @@ use serde::Deserialize;
 use crate::{api_error, api_ok, ApiContext, ResponseJson};
 
 use std::sync::Arc;
+use sqlx::Row;
 
 #[derive(Deserialize)]
 pub struct Path {
@@ -20,21 +21,12 @@ pub async fn machines(
     let stage = stage.stage;
 
     let _: anyhow::Result<()> = try {
-        #[derive(sqlx::FromRow)]
-        struct Row {
-            machine_no: i32,
-        }
-
         let db = &extension.db;
         let mut machines =
-            sqlx::query_as::<_, Row>("SELECT machine_no FROM tt_machine WHERE stage = ?")
+            sqlx::query("SELECT machinenumber FROM tt_machine WHERE stage = ?")
                 .bind(stage)
                 .fetch(db);
-        let machines = machines
-            .map(|x| x.map(|x| x.machine_no))
-            .try_collect::<Vec<_>>()
-            .await
-            .unwrap();
+        let machines = machines.map(|x| x.map(|x| x.get::<u32, _>(0))).try_collect::<Vec<_>>().await?;
         return api_ok!(machines);
     };
 
