@@ -31,6 +31,8 @@ pub fn router() -> Router {
     add_route!(router, GET "/stage/:stage/machines", machines::machines);
     add_route!(router, GET "/users", users::all_users);
     add_route!(router, GET "/break/reasons", breakpoint::all_break_reasons);
+    add_route!(router, GET "/break/points", breakpoint::all_breakpoints);
+    // add_route!(router, POST "/break", breakpoint::post_new);
     router
 }
 
@@ -43,7 +45,7 @@ pub async fn list_routes() -> impl IntoResponse {
     content
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Breakpoint {
     pub creator: String,

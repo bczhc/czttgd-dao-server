@@ -59,8 +59,7 @@ async fn start_axum(api_context: ApiContext) -> anyhow::Result<()> {
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
     let router = router().layer(Extension(api_context));
-    axum::serve(listener, router).await?;
-
     info!("Server started on {}", addr);
+    axum::serve(listener, router).await?;
     Ok(())
 }
