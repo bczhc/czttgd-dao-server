@@ -23,6 +23,7 @@ pub async fn post_new(
     let break_flag = record.break_type == 0;
 
     let result: anyhow::Result<()> = try {
+        let position_b = record.break_position_b.map(|x| x.parse::<BigDecimal>().unwrap());
         let query = sqlx::query(
             r"INSERT INTO tt_inspect
 (creator, devicecode, creationtime, spec,
@@ -42,14 +43,15 @@ pub async fn post_new(
         .bind(record.repo_no)
         .bind(break_flag)
         .bind(record.break_position_a)
-        .bind(record.break_position_b)
+        .bind(position_b)
         .bind(record.comments)
         .bind(record.machine_category);
         db.execute(query).await?;
         return api_ok!(());
     };
-    debug!("Result: {:?}", result);
-    api_error!()
+    debug!("Result: {:?}", &result);
+    let err = result.err().unwrap();
+    api_error!(format!("{}", err))
 }
 
 #[derive(Serialize, Debug)]
@@ -191,7 +193,7 @@ WHERE deleteflag = 0
             breakpoint_b: one.try_get::<Option<BigDecimal>, _>(12)?,
             breakpoint_a: one.try_get::<Option<String>, _>(13)?,
             cause_type: one.try_get(14)?,
-            break_cause_a: one.try_get::<String, _>(15)?,
+            break_cause_a: one.try_get(15)?,
             comments: one.try_get(16)?,
             inspector: one.try_get::<Option<String>, _>(17)?,
             inspection_time: one.try_get(18)?,

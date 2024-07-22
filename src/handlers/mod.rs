@@ -63,14 +63,14 @@ pub struct InspectionForm {
     pub copper_wire_no: Option<u32>,
     pub copper_stick_no: Option<u32>,
     pub repo_no: Option<u32>,
-    // 0: 拉丝池内断线
-    // 1: 非拉丝池内断线
+    /// 0: 拉丝池内断线<br/>
+    /// 1: 非拉丝池内断线
     pub break_type: u32,
-    // 拉丝池
-    pub break_position_b: Option<f32>,
-    // 非拉丝池
+    /// 拉丝池 BigDecimal
+    pub break_position_b: Option<String>,
+    /// 非拉丝池
     pub break_position_a: Option<String>,
-    // 初检
+    /// 初检
     pub break_reason_a: String,
     pub comments: Option<String>,
 }
