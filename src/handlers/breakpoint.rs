@@ -7,7 +7,7 @@ use sqlx::{MySql, Row};
 use sqlx::mysql::MySqlRow;
 
 use crate::{api_error, api_ok, ApiContext};
-use crate::handlers::Inspection;
+use crate::handlers::InspectionForm;
 
 pub async fn all_break_reasons(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
     let db = &api_context.db;

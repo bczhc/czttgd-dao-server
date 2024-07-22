@@ -1,20 +1,21 @@
 use anyhow::anyhow;
 use axum::{Extension, Form};
-use axum::extract::Query;
+use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
 use futures::TryStreamExt;
 use log::debug;
 use serde::{Deserialize, Serialize};
 use sqlx::{Executor, Row};
+use sqlx::types::BigDecimal;
 use yeet_ops::yeet;
-
 use crate::{api_error, api_ok, ApiContext};
-use crate::handlers::Inspection;
+
+use crate::handlers::{InspectionDetails, InspectionForm};
 
 #[axum::debug_handler]
 pub async fn post_new(
     Extension(api_context): Extension<ApiContext>,
-    Form(record): Form<Inspection>,
+    Form(record): Form<InspectionForm>,
 ) -> impl IntoResponse {
     debug!("post_new record: {:?}", record);
     let db = &api_context.db;
@@ -79,7 +80,8 @@ pub async fn query_summary(
     let db = &api_context.db;
 
     let r: anyhow::Result<()> = try {
-        let mut query = sqlx::query(r"SELECT
+        let mut query = sqlx::query(
+            r"SELECT
        t1.breakreasona,
        t1.breakreasonb,
        t1.spec,
@@ -100,7 +102,8 @@ WHERE t2.stage = ?
         OR t1.spec LIKE CONCAT('%', ?, '%')
         OR t1.creationtime LIKE CONCAT('%', ?, '%')
         OR CONCAT(devicecode, '号机台') LIKE CONCAT('%', ?, '%')
-    )");
+    )",
+        );
         query = query.bind(api_query.stage as i32);
         for _ in 0..6 {
             query = query.bind(&api_query.filter);
@@ -121,7 +124,7 @@ WHERE t2.stage = ?
                 cause: match checking_flag {
                     0 => break_cause_a,
                     1 => break_cause_b,
-                    _ => yeet!(anyhow!("Invalid 'billflag' field"))
+                    _ => yeet!(anyhow!("Invalid 'billflag' field")),
                 },
                 product_spec: spec,
                 break_spec,
@@ -135,4 +138,67 @@ WHERE t2.stage = ?
         return api_ok!(collected);
     };
     api_error!(format!("{:?}", r))
+}
+
+#[axum::debug_handler]
+pub async fn query_details(
+    Extension(api_context): Extension<ApiContext>,
+    path: Path<(u32,)>,
+) -> impl IntoResponse {
+    let id = path.0.0;
+    let db = &api_context.db;
+
+    let result: anyhow::Result<()> = try {
+        let one = sqlx::query(
+            r"SELECT devicecode,
+       creator,
+       creationtime,
+       billflag,
+       spec,
+       wirenum,
+       breakspec,
+       twbatchcode,
+       trbatchcode,
+       dlwarehouse,
+       tgproducttime,
+       breakflag,
+       breakpointb,
+       breakpointa,
+       reasontype,
+       breakreasona,
+       memo,
+       inspector,
+       inspecttime,
+       breakreasonb
+FROM tt_inspect
+WHERE deleteflag = 0
+  AND id = ?",
+        ).bind(id as i32).fetch_one(db).await?;
+
+        let details = InspectionDetails {
+            device_code: one.try_get::<i32, _>(0)? as u32,
+            creator: one.try_get::<String, _>(1)?,
+            creation_time: one.try_get::<String, _>(2)?,
+            inspection_flag: one.try_get::<i32, _>(3)? as u32,
+            product_spec: one.try_get::<Option<String>, _>(4)?,
+            wire_num: one.try_get::<Option<i32>, _>(5)?.map(|num| num as u32),
+            break_spec: one.try_get::<String, _>(6)?,
+            wire_batch_code: one.try_get(7)?,
+            stick_batch_code: one.try_get(8)?,
+            warehouse: one.try_get::<Option<String>, _>(9)?,
+            product_time: one.try_get::<Option<String>, _>(10)?,
+            break_flag: one.try_get::<&str, _>(11)? == "1",
+            breakpoint_b: one.try_get::<Option<BigDecimal>, _>(12)?,
+            breakpoint_a: one.try_get::<Option<String>, _>(13)?,
+            cause_type: one.try_get(14)?,
+            break_cause_a: one.try_get::<String, _>(15)?,
+            comments: one.try_get(16)?,
+            inspector: one.try_get::<Option<String>, _>(17)?,
+            inspection_time: one.try_get(18)?,
+            break_cause_b: one.try_get(19)?,
+        };
+
+        return api_ok!(details);
+    };
+    api_error!(format!("{:?}", result))
 }
