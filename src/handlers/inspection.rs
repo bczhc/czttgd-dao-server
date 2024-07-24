@@ -173,7 +173,8 @@ pub async fn query_details(
        inspector,
        inspecttime,
        breakreasonb,
-       wirespeed
+       wirespeed,
+       devicecategory
 FROM tt_inspect
 WHERE deleteflag = 0
   AND id = ?",
@@ -201,6 +202,7 @@ WHERE deleteflag = 0
             inspection_time: one.try_get(18)?,
             break_cause_b: one.try_get(19)?,
             wire_speed: one.try_get::<Option<i32>, _>(20)?.map(|x| x as u32),
+            device_category: one.try_get(21)?,
         };
 
         return api_ok!(details);

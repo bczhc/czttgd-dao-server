@@ -61,9 +61,9 @@ pub struct InspectionForm {
     pub wire_speed: Option<u32>,
     pub wire_number: Option<u32>,
     pub break_specs: String,
-    pub copper_wire_no: Option<u32>,
-    pub copper_stick_no: Option<u32>,
-    pub repo_no: Option<u32>,
+    pub copper_wire_no: Option<String>,
+    pub copper_stick_no: Option<String>,
+    pub repo_no: Option<String>,
     /// 0: 拉丝池内断线<br/>
     /// 1: 非拉丝池内断线
     pub break_type: u32,
@@ -80,6 +80,7 @@ pub struct InspectionForm {
 #[serde(rename_all = "camelCase")]
 pub struct InspectionDetails {
     device_code: u32,
+    device_category: String,
     creator: String,
     creation_time: String,
     inspection_flag: u32,
