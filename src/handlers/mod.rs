@@ -37,7 +37,7 @@ pub fn router() -> Router {
     add_route!(router, POST "/inspection", inspection::post_new);
     add_route!(router, GET "/inspections", inspection::query_summary);
     add_route!(router, GET "/inspection/:id/details", inspection::query_details);
-    // add_route!(router, PUT "/inspection/:id");
+    add_route!(router, PUT "/inspection/:id", inspection::update);
     router
 }
 
@@ -58,6 +58,7 @@ pub struct InspectionForm {
     pub machine_category: String,
     pub creation_time: String,
     pub product_specs: String,
+    pub wire_speed: Option<u32>,
     pub wire_number: Option<u32>,
     pub break_specs: String,
     pub copper_wire_no: Option<u32>,
@@ -83,6 +84,7 @@ pub struct InspectionDetails {
     creation_time: String,
     inspection_flag: u32,
     product_spec: Option<String>,
+    wire_speed: Option<u32>,
     wire_num: Option<u32>,
     break_spec: String,
     wire_batch_code: Option<String>,

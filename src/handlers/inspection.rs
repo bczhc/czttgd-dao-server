@@ -26,16 +26,17 @@ pub async fn post_new(
         let position_b = record.break_position_b.map(|x| x.parse::<BigDecimal>().unwrap());
         let query = sqlx::query(
             r"INSERT INTO tt_inspect
-(creator, devicecode, creationtime, spec,
+(creator, devicecode, creationtime, spec, wirespeed,
  wirenum, breakspec, twbatchcode, trbatchcode,
  dlwarehouse, breakflag,
  breakpointa, breakpointb, memo, devicecategory, billflag)
-    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0);",
+    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0);",
         )
         .bind(record.creator)
         .bind(record.machine_number)
         .bind(record.creation_time)
         .bind(record.product_specs)
+        .bind(record.wire_speed)
         .bind(record.wire_number)
         .bind(record.break_specs)
         .bind(record.copper_wire_no)
@@ -171,7 +172,8 @@ pub async fn query_details(
        memo,
        inspector,
        inspecttime,
-       breakreasonb
+       breakreasonb,
+       wirespeed
 FROM tt_inspect
 WHERE deleteflag = 0
   AND id = ?",
@@ -198,9 +200,18 @@ WHERE deleteflag = 0
             inspector: one.try_get::<Option<String>, _>(17)?,
             inspection_time: one.try_get(18)?,
             break_cause_b: one.try_get(19)?,
+            wire_speed: one.try_get::<Option<i32>, _>(20)?.map(|x| x as u32),
         };
 
         return api_ok!(details);
     };
     api_error!(format!("{:?}", result))
+}
+
+#[axum::debug_handler]
+pub async fn update(
+    Extension(api_context): Extension<ApiContext>,
+    Form(form): Form<InspectionForm>,
+) -> impl IntoResponse {
+    
 }
