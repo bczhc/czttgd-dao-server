@@ -50,7 +50,7 @@ pub async fn list_routes() -> impl IntoResponse {
     content
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct InspectionForm {
     pub creator: String,

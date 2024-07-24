@@ -5,54 +5,105 @@ use axum::response::IntoResponse;
 use futures::TryStreamExt;
 use log::debug;
 use serde::{Deserialize, Serialize};
-use sqlx::{Executor, Row};
+use sqlx::{Database, Executor, MySql, Row};
+use sqlx::database::HasArguments;
 use sqlx::types::BigDecimal;
 use yeet_ops::yeet;
-use crate::{api_error, api_ok, ApiContext};
 
+use crate::{api_error, api_ok, ApiContext};
 use crate::handlers::{InspectionDetails, InspectionForm};
+
+use sqlx::mysql::MySqlArguments;
+
+
+const FORM_INSERT_SQL: &str = r"INSERT INTO tt_inspect
+(creator,
+ devicecode,
+ creationtime,
+ spec,
+ wirespeed,
+ wirenum,
+ breakspec,
+ twbatchcode,
+ trbatchcode,
+ dlwarehouse,
+ breakflag,
+ breakpointa,
+ breakpointb,
+ memo,
+ devicecategory,
+ billflag)
+    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)";
+
+const FORM_UPDATE_SQL: &str = r"UPDATE tt_inspect
+SET creator        = ?,
+    devicecode     = ?,
+    creationtime   = ?,
+    spec           = ?,
+    wirespeed      = ?,
+    wirenum        = ?,
+    breakspec      = ?,
+    twbatchcode    = ?,
+    trbatchcode    = ?,
+    dlwarehouse    = ?,
+    breakflag      = ?,
+    breakpointa    = ?,
+    breakpointb    = ?,
+    memo           = ?,
+    devicecategory = ?,
+    billflag       = 0
+WHERE id = ?";
+
+macro handle_errors($r:expr) {{
+    debug!("Result: {:?}", &$r);
+    let err = $r.err().unwrap();
+    api_error!(format!("{}", err))
+}}
 
 #[axum::debug_handler]
 pub async fn post_new(
     Extension(api_context): Extension<ApiContext>,
-    Form(record): Form<InspectionForm>,
+    Form(form): Form<InspectionForm>,
 ) -> impl IntoResponse {
-    debug!("post_new record: {:?}", record);
+    debug!("post_new form: {:?}", form);
     let db = &api_context.db;
 
-    let break_flag = record.break_type == 0;
-
     let result: anyhow::Result<()> = try {
-        let position_b = record.break_position_b.map(|x| x.parse::<BigDecimal>().unwrap());
-        let query = sqlx::query(
-            r"INSERT INTO tt_inspect
-(creator, devicecode, creationtime, spec, wirespeed,
- wirenum, breakspec, twbatchcode, trbatchcode,
- dlwarehouse, breakflag,
- breakpointa, breakpointb, memo, devicecategory, billflag)
-    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0);",
-        )
-        .bind(record.creator)
-        .bind(record.machine_number)
-        .bind(record.creation_time)
-        .bind(record.product_specs)
-        .bind(record.wire_speed)
-        .bind(record.wire_number)
-        .bind(record.break_specs)
-        .bind(record.copper_wire_no)
-        .bind(record.copper_stick_no)
-        .bind(record.repo_no)
-        .bind(break_flag)
-        .bind(record.break_position_a)
-        .bind(position_b)
-        .bind(record.comments)
-        .bind(record.machine_category);
+        let query = sqlx::query(FORM_INSERT_SQL);
+        let query = bind_form(query, form);
         db.execute(query).await?;
         return api_ok!(());
     };
-    debug!("Result: {:?}", &result);
-    let err = result.err().unwrap();
-    api_error!(format!("{}", err))
+    handle_errors!(result)
+}
+
+fn bind_form(
+    query: sqlx::query::Query<MySql, MySqlArguments>,
+    form: InspectionForm,
+) -> sqlx::query::Query<MySql, MySqlArguments>
+{
+    let break_flag = form.break_type == 0;
+    let position_b = form
+        .break_position_b
+        .as_ref()
+        .map(|x| x.parse::<BigDecimal>().unwrap());
+
+    return query
+        .bind(form.creator)
+        .bind(form.machine_number)
+        .bind(form.creation_time)
+        .bind(form.product_specs)
+        .bind(form.wire_speed)
+        .bind(form.wire_number)
+        .bind(form.break_specs)
+        .bind(form.copper_wire_no)
+        .bind(form.copper_stick_no)
+        .bind(form.repo_no)
+        .bind(break_flag)
+        .bind(form.break_position_a)
+        .bind(position_b)
+        .bind(form.comments)
+        .bind(form.machine_category);
 }
 
 #[derive(Serialize, Debug)]
@@ -140,7 +191,7 @@ WHERE t2.stage = ?
         }
         return api_ok!(collected);
     };
-    api_error!(format!("{:?}", r))
+    handle_errors!(r)
 }
 
 #[axum::debug_handler]
@@ -148,7 +199,7 @@ pub async fn query_details(
     Extension(api_context): Extension<ApiContext>,
     path: Path<(u32,)>,
 ) -> impl IntoResponse {
-    let id = path.0.0;
+    let id = path.0 .0;
     let db = &api_context.db;
 
     let result: anyhow::Result<()> = try {
@@ -178,7 +229,10 @@ pub async fn query_details(
 FROM tt_inspect
 WHERE deleteflag = 0
   AND id = ?",
-        ).bind(id as i32).fetch_one(db).await?;
+        )
+        .bind(id as i32)
+        .fetch_one(db)
+        .await?;
 
         let details = InspectionDetails {
             device_code: one.try_get::<i32, _>(0)? as u32,
@@ -213,7 +267,19 @@ WHERE deleteflag = 0
 #[axum::debug_handler]
 pub async fn update(
     Extension(api_context): Extension<ApiContext>,
+    Path(path): Path<(u32,)>,
     Form(form): Form<InspectionForm>,
 ) -> impl IntoResponse {
+    let id = path.0;
+    let db = &api_context.db;
     
+    let result: anyhow::Result<()> = try {
+        let query = sqlx::query(FORM_UPDATE_SQL);
+        let query = bind_form(query, form);
+        // WHERE id = ?
+        let query = query.bind(id as i32);
+        query.execute(db).await?;
+        return api_ok!(());
+    };
+    handle_errors!(result)
 }
