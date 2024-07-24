@@ -178,6 +178,7 @@ WHERE t2.stage = ?
                 cause: match checking_flag {
                     0 => break_cause_a,
                     1 => break_cause_b,
+                    2 => None,
                     _ => yeet!(anyhow!("Invalid 'billflag' field")),
                 },
                 product_spec: spec,
@@ -272,7 +273,7 @@ pub async fn update(
 ) -> impl IntoResponse {
     let id = path.0;
     let db = &api_context.db;
-    
+
     let result: anyhow::Result<()> = try {
         let query = sqlx::query(FORM_UPDATE_SQL);
         let query = bind_form(query, form);
