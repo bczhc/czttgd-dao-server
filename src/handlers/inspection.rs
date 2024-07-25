@@ -158,10 +158,11 @@ WHERE t2.stage = ?
         OR t1.spec LIKE CONCAT('%', ?, '%')
         OR t1.creationtime LIKE CONCAT('%', ?, '%')
         OR CONCAT(devicecode, '号机台') LIKE CONCAT('%', ?, '%')
+        OR t1.memo LIKE CONCAT('%', ?, '%')
     )",
         );
         query = query.bind(api_query.stage as i32);
-        for _ in 0..6 {
+        for _ in 0..7 {
             query = query.bind(&api_query.filter);
         }
         let mut stream = query.fetch(db);
