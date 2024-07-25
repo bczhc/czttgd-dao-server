@@ -71,8 +71,10 @@ pub async fn post_new(
     let result: anyhow::Result<()> = try {
         let query = sqlx::query(FORM_INSERT_SQL);
         let query = bind_form(query, form);
-        db.execute(query).await?;
-        return api_ok!(());
+        let r = db.execute(query).await?;
+        let last_id = r.last_insert_id();
+
+        return api_ok!(last_id);
     };
     handle_errors!(result)
 }
