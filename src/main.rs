@@ -17,7 +17,6 @@ static ARGS: Lazy<Mutex<Args>> = Lazy::new(|| Mutex::new(Default::default()));
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     set_up_logging()?;
-
     let args = Args::parse();
     *mutex_lock!(ARGS) = args.clone();
 
@@ -41,6 +40,7 @@ async fn main() -> anyhow::Result<()> {
         .await?;
     assert_eq!(row.0, 42);
     info!("Done.");
+    
     start_axum(Arc::new(ApiContextInner { db: pool })).await?;
 
     Ok(())

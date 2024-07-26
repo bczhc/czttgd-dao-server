@@ -6,15 +6,14 @@ use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use anyhow::anyhow;
 use axum::Json;
 use axum::response::IntoResponse;
-use log::debug;
-use once_cell::sync::Lazy;
 use serde::Serialize;
-use sqlx::{MySql, Pool};
+use sqlx::{FromRow, MySql, Pool, Row};
+use sqlx::mysql::MySqlRow;
 
 pub mod handlers;
 
@@ -95,7 +94,7 @@ impl<D: Serialize> ResponseJson<D> {
         Self {
             data: None,
             code: 1,
-            message: Some(message.into())
+            message: Some(message.into()),
         }
     }
 }
@@ -120,12 +119,23 @@ pub macro api_ok($d:expr) {
     crate::ResponseJson::ok($d).into_response()
 }
 
-pub macro api_error {
-    () => {
-        crate::ResponseJson::<()>::error().into_response()
-    },
-    ($message:expr) => {{
-        debug!("Error message:\n{}", $message);
-        crate::ResponseJson::<()>::error_msg($message).into_response()
-    }}
+fn check_from_row<'a, T, F>(r: &'a MySqlRow, ref_name: &str, get_fn: F) -> sqlx::Result<Option<T>>
+where
+    T: FromRow<'a, MySqlRow>,
+    F: FnOnce(&'a MySqlRow) -> sqlx::Result<T>,
+{
+    try {
+        if r.try_get::<Option<i32>, _>(ref_name)?.is_some() {
+            Some(get_fn(r)?)
+        } else {
+            None
+        }
+    }
 }
+
+pub macro include_sql($name:literal) {
+    include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/sqls/", $name, ".sql"))
+}
+
+// their SQL uses `INT` but not `INT UNSIGNED`
+pub type RefId = i32;
