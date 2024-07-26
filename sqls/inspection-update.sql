@@ -14,5 +14,6 @@ SET creator        = ?,
     breakpointb    = ?,
     memo           = ?,
     devicecategory = ?,
+    breakreasona   = ?,
     billflag       = 0
 WHERE id = ?

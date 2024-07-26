@@ -61,7 +61,8 @@ fn bind_form(
         .bind(form.breakpoint_a)
         .bind(form.breakpoint_b)
         .bind(form.comments)
-        .bind(form.device_category);
+        .bind(form.device_category)
+        .bind(form.break_cause_a);
 }
 
 #[derive(Serialize, Deserialize, Debug)]
