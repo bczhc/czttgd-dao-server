@@ -41,4 +41,5 @@ FROM tt_inspect i
          LEFT JOIN tt_breakreason br_b
                    ON i.breakreasonb = br_b.breakreasonid
          LEFT JOIN tt_user u2
-                   ON i.inspector = u2.userid;
+                   ON i.inspector = u2.userid
+WHERE i.id = ?;

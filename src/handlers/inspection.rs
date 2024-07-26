@@ -50,7 +50,7 @@ fn bind_form(
         .bind(form.creator)
         .bind(form.device_code)
         .bind(form.creation_time)
-        .bind(form.product_specs)
+        .bind(form.product_spec)
         .bind(form.wire_speed)
         .bind(form.wire_number)
         .bind(form.break_spec)
@@ -114,6 +114,7 @@ pub async fn query_details(
 
     let result: anyhow::Result<()> = try {
         let r = sqlx::query(include_sql!("inspection-details"))
+            .bind(id)
             .fetch_one(db)
             .await?;
 

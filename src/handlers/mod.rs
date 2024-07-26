@@ -59,7 +59,7 @@ pub struct InspectionForm {
     pub device_code: i32,
     pub device_category: String,
     pub creation_time: String,
-    pub product_specs: String,
+    pub product_spec: String,
     pub wire_speed: Option<i32>,
     pub wire_number: Option<i32>,
     pub break_spec: String,
@@ -128,7 +128,7 @@ pub struct InspectionSummary {
     creator: User,
     creation_time: String,
     /// 0: 已初检 1: 已终检
-    inspection_state: i32,
+    inspection_flag: i32,
 }
 
 #[derive(sqlx::FromRow, Debug, Serialize)]
