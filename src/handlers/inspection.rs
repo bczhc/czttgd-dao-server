@@ -42,8 +42,8 @@ fn bind_form(
     // They use `char(1)`. According the conversion,
     // we must insert a `&str`.
     let break_flag = match form.break_flag {
-        true => "0",
-        false => "1",
+        true => "1",
+        false => "0",
     };
 
     return query
