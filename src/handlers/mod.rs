@@ -34,7 +34,7 @@ pub fn router() -> Router {
     add_route!(router, GET "/routes", list_routes);
     add_route!(router, GET "/stage/:stage/devices", device::devices);
     add_route!(router, GET "/users", users::all_users);
-    add_route!(router, GET "/break/reasons", breakpoint::all_break_reasons);
+    add_route!(router, GET "/break/causes", breakpoint::all_break_reasons);
     add_route!(router, GET "/break/points", breakpoint::all_breakpoints);
     add_route!(router, POST "/inspection", inspection::post_new);
     add_route!(router, GET "/inspection/search", inspection::search);
