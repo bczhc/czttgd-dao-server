@@ -87,7 +87,7 @@ pub struct InspectionDetails {
     creator: User,
     creation_time: String,
     inspection_flag: i32,
-    product_spec: Option<String>,
+    product_spec: String,
     wire_speed: Option<i32>,
     wire_num: Option<i32>,
     break_spec: String,
@@ -123,7 +123,7 @@ pub struct InspectionSummary {
     #[sqlx(skip)]
     break_cause_b: Option<BreakCause>,
     break_spec: String,
-    product_spec: Option<String>,
+    product_spec: String,
     #[sqlx(flatten)]
     creator: User,
     creation_time: String,
