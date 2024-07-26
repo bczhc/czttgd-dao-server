@@ -122,6 +122,7 @@ pub struct InspectionSummary {
     break_cause_a: Option<BreakCause>,
     #[sqlx(skip)]
     break_cause_b: Option<BreakCause>,
+    break_flag: bool,
     break_spec: String,
     product_spec: String,
     #[sqlx(flatten)]
