@@ -6,33 +6,33 @@ use std::fs::File;
 use std::io;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 
 use anyhow::anyhow;
 use axum::Json;
 use axum::response::IntoResponse;
+use once_cell::sync::Lazy;
 use serde::Serialize;
 use sqlx::{FromRow, MySql, Pool, Row};
 use sqlx::mysql::MySqlRow;
+use crate::config::Config;
 
 pub mod handlers;
+pub mod config;
 
 pub const DATABASE_NAME: &str = "breakInfo";
 
+macro lazy_default() {
+    Lazy::new(|| Mutex::new(Default::default()))
+}
+
+pub static ARGS: Lazy<Mutex<Args>> = lazy_default!();
+pub static CONFIG: Lazy<Mutex<Config>> = lazy_default!();
+
 #[derive(clap::Parser, Debug, Default, Clone)]
 pub struct Args {
-    pub mysql_server: String,
-    /// Path to MySql credentials file
-    ///
-    /// Format:
-    /// 1| <username>
-    /// 2| <password>
-    pub mysql_credentials_file: PathBuf,
-    /// Port the HTTP server will listen on
-    #[arg(short = 'p', long, default_value = "8010")]
-    pub listen_port: u16,
-    #[arg(short = 'P', long, default_value = "3306")]
-    pub mysql_port: u16,
+    #[arg(default_value = "./server.toml")]
+    pub config: PathBuf,
 }
 
 pub fn set_up_logging() -> anyhow::Result<()> {
@@ -51,19 +51,6 @@ pub fn set_up_logging() -> anyhow::Result<()> {
         .chain(fern::log_file("czttgd-dao.log")?)
         .apply()?;
     Ok(())
-}
-
-pub fn read_credentials<P: AsRef<Path>>(path: P) -> io::Result<(String, String)> {
-    let reader = BufReader::new(File::open(path.as_ref())?);
-    let mut lines = reader.lines();
-    let credentials: Option<(io::Result<String>, io::Result<String>)> = try {
-        let username = lines.next()?;
-        let password = lines.next()?;
-        (username, password)
-    };
-    let results =
-        credentials.ok_or_else(|| io::Error::other(anyhow!("Malformed credential file")))?;
-    Ok((results.0?, results.1?))
 }
 
 #[derive(Serialize)]
