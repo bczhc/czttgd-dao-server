@@ -5,3 +5,6 @@ ip = ""
 port = 3306
 username = ""
 password = ""
+
+[logging]
+file = "czttgd-dao.log"

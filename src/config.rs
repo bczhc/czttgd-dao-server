@@ -7,6 +7,7 @@ use serde::Deserialize;
 pub struct Config {
     pub listen_port: u16,
     pub mysql: MySql,
+    pub logging: Option<Logging>,
 }
 
 #[derive(Deserialize, Debug, Default, Clone)]
@@ -15,6 +16,11 @@ pub struct MySql {
     pub port: u16,
     pub username: String,
     pub password: String,
+}
+
+#[derive(Deserialize, Debug, Default, Clone)]
+pub struct Logging {
+    pub file: Option<String>,
 }
 
 pub fn get_config<P: AsRef<Path>>(toml: P) -> figment::Result<Config> {

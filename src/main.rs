@@ -1,3 +1,5 @@
+#![feature(let_chains)]
+
 use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 
@@ -15,9 +17,11 @@ use czttgd_dao::config::{get_config, Config};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    set_up_logging()?;
     let args = Args::parse();
     let config = get_config(&args.config)?;
+    if let Some(l) = &config.logging && let Some(f) = &l.file {
+        set_up_logging(f)?;
+    }
     debug!("Args: {:?}", args);
     debug!("Configs: {:?}", config);
     *mutex_lock!(ARGS) = args.clone();

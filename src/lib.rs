@@ -35,7 +35,7 @@ pub struct Args {
     pub config: PathBuf,
 }
 
-pub fn set_up_logging() -> anyhow::Result<()> {
+pub fn set_up_logging(file: impl AsRef<Path>) -> anyhow::Result<()> {
     fern::Dispatch::new()
         .format(|out, message, record| {
             out.finish(format_args!(
@@ -48,7 +48,7 @@ pub fn set_up_logging() -> anyhow::Result<()> {
         })
         .level(log::LevelFilter::Debug)
         .chain(io::stdout())
-        .chain(fern::log_file("czttgd-dao.log")?)
+        .chain(fern::log_file(file)?)
         .apply()?;
     Ok(())
 }
