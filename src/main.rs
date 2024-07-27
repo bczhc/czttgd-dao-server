@@ -1,25 +1,28 @@
 #![feature(let_chains)]
 
 use std::net::SocketAddr;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
-use axum::{Extension, Router};
 use axum::routing::get;
+use axum::{Extension, Router};
 use clap::Parser;
 use log::{debug, info};
-use once_cell::sync::Lazy;
-use sqlx::{Executor, MySqlPool, Pool, Row, Statement};
-use sqlx::mysql::MySqlTypeInfo;
+use sqlx::MySqlPool;
 
-use czttgd_dao::{ApiContext, ApiContextInner, Args, ARGS, CONFIG, DATABASE_NAME, handlers, mutex_lock, set_up_logging};
+use czttgd_dao::{
+    handlers, mutex_lock, set_up_logging, ApiContext, ApiContextInner, Args, ARGS, CONFIG,
+    DATABASE_NAME,
+};
 
-use czttgd_dao::config::{get_config, Config};
+use czttgd_dao::config::get_config;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let args = Args::parse();
     let config = get_config(&args.config)?;
-    if let Some(l) = &config.logging && let Some(f) = &l.file {
+    if let Some(l) = &config.logging
+        && let Some(f) = &l.file
+    {
         set_up_logging(f)?;
     }
     debug!("Args: {:?}", args);

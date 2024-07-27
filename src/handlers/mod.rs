@@ -1,22 +1,20 @@
+use std::fmt;
 use std::sync::Mutex;
-use std::{fmt, io};
 
 use axum::response::IntoResponse;
 use axum::Router;
-use clap::builder::TypedValueParser;
-use futures::TryStreamExt;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sqlx::mysql::MySqlRow;
-use sqlx::Row;
 use sqlx::types::BigDecimal;
+use sqlx::Row;
 
-use crate::{RefId, mutex_lock};
+use crate::{mutex_lock, RefId};
 
 mod breakpoint;
 pub mod demo;
-mod inspection;
 mod device;
+mod inspection;
 mod users;
 
 static COLLECTED_ROUTES: Lazy<Mutex<Vec<&'static str>>> =

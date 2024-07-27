@@ -1,14 +1,11 @@
-use std::sync::Arc;
-
-use axum::{debug_handler, Extension, extract};
 use axum::response::{IntoResponse, Response};
-use clap::builder::TypedValueParser;
+use axum::{debug_handler, extract, Extension};
 use futures::{StreamExt, TryStreamExt};
 use serde::Deserialize;
 use sqlx::Row;
 
-use crate::{api_ok, ApiContext, include_sql, ResponseJson};
 use crate::handlers::handle_errors;
+use crate::{api_ok, include_sql, ApiContext};
 
 #[derive(Deserialize)]
 pub struct Path {

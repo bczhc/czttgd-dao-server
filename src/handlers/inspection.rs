@@ -1,15 +1,10 @@
-use anyhow::anyhow;
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
 use axum::{Extension, Form};
 use futures::TryStreamExt;
-use log::debug;
 use serde::{Deserialize, Serialize};
-use sqlx::database::HasArguments;
 use sqlx::mysql::MySqlArguments;
-use sqlx::types::BigDecimal;
-use sqlx::{Database, Executor, FromRow, MySql, Row};
-use yeet_ops::yeet;
+use sqlx::{Executor, FromRow, MySql};
 
 use crate::handlers::{
     handle_errors, BreakCause, Breakpoint, InspectionDetails, InspectionForm, InspectionSummary,

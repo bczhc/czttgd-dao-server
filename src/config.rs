@@ -1,7 +1,7 @@
-use std::path::Path;
-use figment::Figment;
 use figment::providers::{Format, Toml};
+use figment::Figment;
 use serde::Deserialize;
+use std::path::Path;
 
 #[derive(Deserialize, Debug, Default, Clone)]
 pub struct Config {
@@ -24,7 +24,5 @@ pub struct Logging {
 }
 
 pub fn get_config<P: AsRef<Path>>(toml: P) -> figment::Result<Config> {
-    Figment::new()
-        .merge(Toml::file(toml))
-        .extract()
+    Figment::new().merge(Toml::file(toml)).extract()
 }

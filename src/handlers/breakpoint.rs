@@ -1,13 +1,8 @@
-use axum::{Extension, Form, Router};
 use axum::response::IntoResponse;
-use axum::routing::get;
-use clap::builder::TypedValueParser;
-use futures::{FutureExt, TryStreamExt};
-use sqlx::{MySql, Row};
-use sqlx::mysql::MySqlRow;
+use axum::Extension;
 
-use crate::{api_ok, ApiContext, include_sql};
-use crate::handlers::{BreakCause, Breakpoint, handle_errors, InspectionForm};
+use crate::handlers::{handle_errors, BreakCause, Breakpoint};
+use crate::{api_ok, include_sql, ApiContext};
 
 pub async fn all_break_reasons(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
     let db = &api_context.db;

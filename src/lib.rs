@@ -2,23 +2,20 @@
 #![feature(decl_macro)]
 #![feature(yeet_expr)]
 
-use std::fs::File;
 use std::io;
-use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 
-use anyhow::anyhow;
-use axum::Json;
+use crate::config::Config;
 use axum::response::IntoResponse;
+use axum::Json;
 use once_cell::sync::Lazy;
 use serde::Serialize;
-use sqlx::{FromRow, MySql, Pool, Row};
 use sqlx::mysql::MySqlRow;
-use crate::config::Config;
+use sqlx::{FromRow, MySql, Pool, Row};
 
-pub mod handlers;
 pub mod config;
+pub mod handlers;
 
 pub const DATABASE_NAME: &str = "breakInfo";
 
