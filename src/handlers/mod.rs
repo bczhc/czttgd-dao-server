@@ -79,6 +79,7 @@ pub struct InspectionForm {
 #[derive(Serialize, Debug, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct InspectionDetails {
+    id: i64,
     device_code: i32,
     device_category: String,
     /// ref

@@ -24,11 +24,14 @@ FROM tt_inspect i
 WHERE m.stage = ?
   AND i.deleteflag = 0
   AND (
-    i.creator LIKE CONCAT('%', ?, '%')
-        OR i.breakreasona LIKE CONCAT('%', ?, '%')
-        OR i.breakreasonb LIKE CONCAT('%', ?, '%')
+    u.name LIKE CONCAT('%', ?, '%')
+        OR br_a.breakreason LIKE CONCAT('%', ?, '%')
+        OR br_b.breakreason LIKE CONCAT('%', ?, '%')
         OR i.spec LIKE CONCAT('%', ?, '%')
+        OR i.creationtime LIKE CONCAT('%', DATE_FORMAT(CONVERT(?, DATE), '%Y-%m-%d'), '%')
         OR i.creationtime LIKE CONCAT('%', ?, '%')
+        OR REPLACE(i.creationtime, '-', '.') LIKE CONCAT('%', ?, '%')
+        OR REPLACE(i.creationtime, '-0', '.') LIKE CONCAT('%', ?, '%')
         OR CONCAT(devicecode, '号机台') LIKE CONCAT('%', ?, '%')
         OR i.memo LIKE CONCAT('%', ?, '%')
     )

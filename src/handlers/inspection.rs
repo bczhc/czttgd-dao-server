@@ -93,7 +93,7 @@ pub async fn search(
     let r: anyhow::Result<()> = try {
         let mut query = sqlx::query(include_sql!("inspection-search"));
         query = query.bind(api_query.stage as i32);
-        for _ in 0..7 {
+        for _ in 0..10 {
             query = query.bind(&api_query.filter);
         }
         let mut stream = query.fetch(db);

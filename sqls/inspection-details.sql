@@ -30,7 +30,8 @@ SELECT i.devicecode       as device_code,
        i.inspector,
        u2.userid          as inspector_user_id,
        u2.name            as inspector_user_name,
-       i.inspecttime      as inspection_time
+       i.inspecttime      as inspection_time,
+       i.id
 FROM tt_inspect i
          LEFT JOIN tt_user u
                    ON i.creator = u.userid
