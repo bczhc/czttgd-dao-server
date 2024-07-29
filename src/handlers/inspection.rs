@@ -147,7 +147,7 @@ pub async fn query_details(
             break_cause_b: check_from_row(&r, "break_cause_b", |r| {
                 BreakCause::from_row_prefixed(r, "br_b")
             })?,
-            inspector: check_from_row(&r, "inspector", |r| {
+            inspector: check_from_row(&r, "inspector_user_name", |r| {
                 User::from_row_prefixed(r, "inspector")
             })?,
             ..details

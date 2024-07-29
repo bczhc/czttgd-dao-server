@@ -12,7 +12,7 @@ use axum::Json;
 use once_cell::sync::Lazy;
 use serde::Serialize;
 use sqlx::mysql::MySqlRow;
-use sqlx::{FromRow, MySql, Pool, Row};
+use sqlx::{FromRow, MySql, Pool, Row, ValueRef};
 
 pub mod config;
 pub mod handlers;
@@ -111,7 +111,7 @@ where
     F: FnOnce(&'a MySqlRow) -> sqlx::Result<T>,
 {
     try {
-        if r.try_get::<Option<i32>, _>(ref_name)?.is_some() {
+        if !r.try_get_raw(ref_name)?.is_null() {
             Some(get_fn(r)?)
         } else {
             None

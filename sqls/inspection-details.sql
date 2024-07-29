@@ -27,9 +27,11 @@ SELECT i.devicecode       as device_code,
        br_b.breakreason   as br_b_cause_name,
        i.breakreasonb     as break_cause_b,
        i.memo             as comments,
-       i.inspector,
-       u2.userid          as inspector_user_id,
-       u2.name            as inspector_user_name,
+       -- Due to unexpected database changing demands, i.inspector is a string, thus we
+       -- can't get its id here. The inspector id is not used for the App side, so just set
+       -- a dummy value.
+       0                  as inspector_user_id,
+       i.inspector        as inspector_user_name,
        i.inspecttime      as inspection_time,
        i.id
 FROM tt_inspect i
@@ -41,6 +43,4 @@ FROM tt_inspect i
                    ON i.breakreasona = br_a.breakreasonid
          LEFT JOIN tt_breakreason br_b
                    ON i.breakreasonb = br_b.breakreasonid
-         LEFT JOIN tt_user u2
-                   ON i.inspector = u2.userid
 WHERE i.id = ?;
