@@ -1,22 +1,26 @@
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use axum::{Extension, Form};
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
-use axum::{Extension, Form};
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
-use sqlx::mysql::MySqlArguments;
 use sqlx::{Executor, FromRow, MySql};
+use sqlx::mysql::MySqlArguments;
 
-use crate::handlers::{handle_errors, BreakCause, Breakpoint, InspectionDetails, InspectionForm, InspectionSummary, User, counter};
-use crate::{api_ok, check_from_row, include_sql, ApiContext, MySqlPool};
+use crate::{api_ok, ApiContext, check_from_row, include_sql, MySqlPool};
+use crate::handlers::{BreakCause, Breakpoint, counter, handle_errors, InspectionDetails, InspectionForm, InspectionSummary, User};
 
 /// timestamp+<counter>
-/// 
+///
 /// `counter` has three-width padding, like 001, 002...
 async fn generate_inspection_id(db: &MySqlPool) -> anyhow::Result<i64> {
     let id_num = counter::increase(db).await?;
 
-    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let timestamp = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs();
     let id = format!("{timestamp}{:03}", id_num).parse::<i64>()?;
     Ok(id)
 }
@@ -30,15 +34,14 @@ pub async fn post_new(
 
     let result: anyhow::Result<()> = try {
         let id = generate_inspection_id(db).await?;
-        
+
         let query = sqlx::query(include_sql!("inspection-post"));
         let query = bind_form(query, form);
         // bind: id
         let query = query.bind(id);
-        let r = db.execute(query).await?;
-        let last_id = r.last_insert_id() as i64;
+        db.execute(query).await?;
 
-        return api_ok!(last_id);
+        return api_ok!(id);
     };
     handle_errors!(result)
 }
