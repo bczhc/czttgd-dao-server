@@ -1,3 +1,4 @@
+use std::time::{SystemTime, UNIX_EPOCH};
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
 use axum::{Extension, Form};
@@ -6,11 +7,19 @@ use serde::{Deserialize, Serialize};
 use sqlx::mysql::MySqlArguments;
 use sqlx::{Executor, FromRow, MySql};
 
-use crate::handlers::{
-    handle_errors, BreakCause, Breakpoint, InspectionDetails, InspectionForm, InspectionSummary,
-    User,
-};
-use crate::{api_ok, check_from_row, include_sql, ApiContext};
+use crate::handlers::{handle_errors, BreakCause, Breakpoint, InspectionDetails, InspectionForm, InspectionSummary, User, counter};
+use crate::{api_ok, check_from_row, include_sql, ApiContext, MySqlPool};
+
+/// timestamp+<counter>
+/// 
+/// `counter` has three-width padding, like 001, 002...
+async fn generate_inspection_id(db: &MySqlPool) -> anyhow::Result<i64> {
+    let id_num = counter::increase(db).await?;
+
+    let timestamp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+    let id = format!("{timestamp}{:03}", id_num).parse::<i64>()?;
+    Ok(id)
+}
 
 #[axum::debug_handler]
 pub async fn post_new(
@@ -20,10 +29,14 @@ pub async fn post_new(
     let db = &api_context.db;
 
     let result: anyhow::Result<()> = try {
+        let id = generate_inspection_id(db).await?;
+        
         let query = sqlx::query(include_sql!("inspection-post"));
         let query = bind_form(query, form);
+        // bind: id
+        let query = query.bind(id);
         let r = db.execute(query).await?;
-        let last_id = r.last_insert_id();
+        let last_id = r.last_insert_id() as i64;
 
         return api_ok!(last_id);
     };
@@ -103,7 +116,7 @@ pub async fn search(
 #[axum::debug_handler]
 pub async fn query_details(
     Extension(api_context): Extension<ApiContext>,
-    path: Path<(u32,)>,
+    path: Path<(i64,)>,
 ) -> impl IntoResponse {
     let id = path.0 .0;
     let db = &api_context.db;
@@ -138,7 +151,7 @@ pub async fn query_details(
 #[axum::debug_handler]
 pub async fn update(
     Extension(api_context): Extension<ApiContext>,
-    Path(path): Path<(u32,)>,
+    Path(path): Path<(i64,)>,
     Form(form): Form<InspectionForm>,
 ) -> impl IntoResponse {
     let id = path.0;
@@ -148,7 +161,7 @@ pub async fn update(
         let query = sqlx::query(include_sql!("inspection-update"));
         let query = bind_form(query, form);
         // WHERE id = ?
-        let query = query.bind(id as i32);
+        let query = query.bind(id as i64);
         query.execute(db).await?;
         return api_ok!(());
     };

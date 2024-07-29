@@ -16,6 +16,7 @@ pub mod demo;
 mod device;
 mod inspection;
 mod users;
+mod counter;
 
 static COLLECTED_ROUTES: Lazy<Mutex<Vec<&'static str>>> =
     Lazy::new(|| Mutex::new(Default::default()));
@@ -114,7 +115,7 @@ pub struct InspectionDetails {
 #[derive(Serialize, Debug, sqlx::FromRow)]
 #[serde(rename_all = "camelCase")]
 pub struct InspectionSummary {
-    id: i32,
+    id: i64,
     device_code: i32,
     #[sqlx(skip)]
     break_cause_a: Option<BreakCause>,

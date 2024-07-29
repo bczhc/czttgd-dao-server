@@ -89,8 +89,10 @@ impl<D: Serialize> IntoResponse for ResponseJson<D> {
     }
 }
 
+pub type MySqlPool = Pool<MySql>;
+
 pub struct ApiContextInner {
-    pub db: Pool<MySql>,
+    pub db: MySqlPool,
 }
 
 pub type ApiContext = Arc<ApiContextInner>;
