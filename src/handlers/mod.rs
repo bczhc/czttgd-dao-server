@@ -39,6 +39,7 @@ pub fn router() -> Router {
     add_route!(router, GET "/inspection/search", inspection::search);
     add_route!(router, GET "/inspection/:id/details", inspection::query_details);
     add_route!(router, PUT "/inspection/:id", inspection::update);
+    add_route!(router, GET "/inspection/count", inspection::count);
     router
 }
 

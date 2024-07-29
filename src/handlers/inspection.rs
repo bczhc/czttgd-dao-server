@@ -5,7 +5,7 @@ use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
 use futures::TryStreamExt;
 use serde::{Deserialize, Serialize};
-use sqlx::{Executor, FromRow, MySql};
+use sqlx::{Executor, FromRow, MySql, Row};
 use sqlx::mysql::MySqlArguments;
 
 use crate::{api_ok, ApiContext, check_from_row, include_sql, MySqlPool};
@@ -80,6 +80,7 @@ fn bind_form(
 pub struct SearchQuery {
     filter: String,
     stage: u32,
+    offset: Option<u64>,
 }
 
 /// Performs a search, and returns a set of [`InspectionSummary`].
@@ -89,6 +90,7 @@ pub async fn search(
     Query(api_query): Query<SearchQuery>,
 ) -> impl IntoResponse {
     let db = &api_context.db;
+    let offset = api_query.offset.unwrap_or_default();
 
     let r: anyhow::Result<()> = try {
         let mut query = sqlx::query(include_sql!("inspection-search"));
@@ -96,6 +98,8 @@ pub async fn search(
         for _ in 0..10 {
             query = query.bind(&api_query.filter);
         }
+        // offset
+        let query = query.bind(offset);
         let mut stream = query.fetch(db);
         let mut collected = vec![];
         while let Some(row) = stream.try_next().await? {
@@ -169,4 +173,18 @@ pub async fn update(
         return api_ok!(());
     };
     handle_errors!(result)
+}
+
+#[axum::debug_handler]
+pub async fn count(
+    Extension(api_context): Extension<ApiContext>,
+) -> impl IntoResponse {
+    let db = &api_context.db;
+    let r: anyhow::Result<()> = try {
+        let r = sqlx::query(include_sql!("inspection-count")).fetch_one(db).await?;
+        let count: i64 = r.try_get("c")?;
+        
+        return api_ok!(count);
+    };
+    handle_errors!(r)
 }
