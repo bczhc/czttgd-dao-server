@@ -164,7 +164,7 @@ pub async fn update(
         let query = sqlx::query(include_sql!("inspection-update"));
         let query = bind_form(query, form);
         // WHERE id = ?
-        let query = query.bind(id as i64);
+        let query = query.bind(id);
         query.execute(db).await?;
         return api_ok!(());
     };
