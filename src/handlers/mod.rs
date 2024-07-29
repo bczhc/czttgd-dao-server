@@ -14,7 +14,7 @@ use crate::{mutex_lock, RefId};
 mod breakpoint;
 pub mod demo;
 mod device;
-mod inspection;
+pub mod inspection;
 mod users;
 mod counter;
 

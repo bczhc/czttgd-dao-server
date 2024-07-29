@@ -80,6 +80,7 @@ fn bind_form(
 pub struct SearchQuery {
     filter: String,
     stage: u32,
+    limit: Option<u64>,
     offset: Option<u64>,
 }
 
@@ -91,6 +92,7 @@ pub async fn search(
 ) -> impl IntoResponse {
     let db = &api_context.db;
     let offset = api_query.offset.unwrap_or_default();
+    let limit = api_query.limit.unwrap_or(100);
 
     let r: anyhow::Result<()> = try {
         let mut query = sqlx::query(include_sql!("inspection-search"));
@@ -98,8 +100,8 @@ pub async fn search(
         for _ in 0..10 {
             query = query.bind(&api_query.filter);
         }
-        // offset
-        let query = query.bind(offset);
+        // limit, offset
+        let query = query.bind(limit).bind(offset);
         let mut stream = query.fetch(db);
         let mut collected = vec![];
         while let Some(row) = stream.try_next().await? {

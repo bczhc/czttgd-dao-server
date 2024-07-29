@@ -4,7 +4,7 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 
 use axum::routing::get;
-use axum::{Extension, Router};
+use axum::{Extension, Form, Router};
 use clap::Parser;
 use log::{debug, info};
 use sqlx::MySqlPool;
@@ -15,6 +15,7 @@ use czttgd_dao::{
 };
 
 use czttgd_dao::config::get_config;
+use czttgd_dao::handlers::{inspection, InspectionForm};
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
