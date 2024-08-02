@@ -62,7 +62,6 @@ fn bind_form(
         .bind(form.device_code)
         .bind(form.creation_time)
         .bind(form.product_spec)
-        .bind(form.wire_speed)
         .bind(form.wire_number)
         .bind(form.break_spec)
         .bind(form.wire_batch_code)

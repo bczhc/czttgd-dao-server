@@ -3,7 +3,6 @@ INSERT INTO tt_inspect
  devicecode,
  creationtime,
  spec,
- wirespeed,
  wirenum,
  breakspec,
  twbatchcode,
@@ -17,4 +16,4 @@ INSERT INTO tt_inspect
  breakreasona,
  billflag,
  id)
-    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
