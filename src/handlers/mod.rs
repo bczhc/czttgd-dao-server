@@ -172,6 +172,8 @@ pub struct BreakCause {
     r#type: Option<String>,
     #[sqlx(rename = "cause_name")]
     cause: Option<String>,
+    #[sqlx(rename = "cause_enable_state")]
+    enable_state: i32,
 }
 
 impl BreakCause {
@@ -180,6 +182,7 @@ impl BreakCause {
             id: row.try_get(format!("{prefix}_cause_id").as_str())?,
             r#type: row.try_get(format!("{prefix}_cause_type").as_str())?,
             cause: row.try_get(format!("{prefix}_cause_name").as_str())?,
+            enable_state: row.try_get(format!("{prefix}_cause_enable_state").as_str())?,
         })
     }
 }
