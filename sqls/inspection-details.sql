@@ -3,6 +3,8 @@ SELECT i.devicecode       as device_code,
        i.creator,
        u.userid           as user_id,
        u.name             as user_name,
+       u.usertype         as user_user_type,
+       u.enablestate      as user_enable_state,
        i.creationtime     as creation_time,
        i.billflag         as inspection_flag,
        i.spec             as product_spec,
@@ -31,6 +33,8 @@ SELECT i.devicecode       as device_code,
        -- can't get its id here. The inspector id is not used for the App side, so just set
        -- a dummy value.
        0                  as inspector_user_id,
+       '1'                as inspector_user_user_type,
+       2                  as inspector_user_enable_state,
        i.inspector        as inspector_user_name,
        i.inspecttime      as inspection_time,
        i.id

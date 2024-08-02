@@ -3,7 +3,7 @@ use std::sync::Mutex;
 
 use axum::response::IntoResponse;
 use axum::Router;
-use log::{debug, info};
+use log::info;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sqlx::mysql::MySqlRow;
@@ -148,6 +148,10 @@ pub struct User {
     id: i32,
     #[sqlx(rename = "user_name")]
     name: String,
+    #[sqlx(rename = "user_enable_state")]
+    enable_state: i32,
+    #[sqlx(rename = "user_user_type")]
+    user_type: String,
 }
 
 #[derive(sqlx::FromRow, Debug, Serialize)]
@@ -185,6 +189,8 @@ impl User {
         Ok(Self {
             id: row.try_get(format!("{prefix}_user_id").as_str())?,
             name: row.try_get(format!("{prefix}_user_name").as_str())?,
+            enable_state: row.try_get(format!("{prefix}_user_enable_state").as_str())?,
+            user_type: row.try_get(format!("{prefix}_user_user_type").as_str())?,
         })
     }
 }
