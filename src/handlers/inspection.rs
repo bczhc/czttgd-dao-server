@@ -4,6 +4,7 @@ use axum::{Extension, Form};
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
 use futures::TryStreamExt;
+use log::{debug, info};
 use serde::{Deserialize, Serialize};
 use sqlx::{Executor, FromRow, MySql, Row};
 use sqlx::mysql::MySqlArguments;
@@ -30,6 +31,8 @@ pub async fn post_new(
     Extension(api_context): Extension<ApiContext>,
     Form(form): Form<InspectionForm>,
 ) -> impl IntoResponse {
+    info!("Route: /inspection");
+    debug!("Form: {:?}", form);
     let db = &api_context.db;
 
     let result: anyhow::Result<()> = try {
@@ -90,6 +93,8 @@ pub async fn search(
     Extension(api_context): Extension<ApiContext>,
     Query(api_query): Query<SearchQuery>,
 ) -> impl IntoResponse {
+    info!("Route: /inspection/search");
+    debug!("Query: {:?}", api_query);
     let db = &api_context.db;
     let offset = api_query.offset.unwrap_or_default();
     let limit = api_query.limit.unwrap_or(100);
@@ -127,6 +132,8 @@ pub async fn query_details(
     Extension(api_context): Extension<ApiContext>,
     path: Path<(i64,)>,
 ) -> impl IntoResponse {
+    info!("Route: /inspection/:id/details");
+    debug!("Path: {:?}", path);
     let id = path.0 .0;
     let db = &api_context.db;
 
@@ -163,6 +170,7 @@ pub async fn update(
     Path(path): Path<(i64,)>,
     Form(form): Form<InspectionForm>,
 ) -> impl IntoResponse {
+    info!("Route: /inspection/:id");
     let id = path.0;
     let db = &api_context.db;
 
@@ -181,6 +189,7 @@ pub async fn update(
 pub async fn count(
     Extension(api_context): Extension<ApiContext>,
 ) -> impl IntoResponse {
+    info!("Route: /inspection/count");
     let db = &api_context.db;
     let r: anyhow::Result<()> = try {
         let r = sqlx::query(include_sql!("inspection-count")).fetch_one(db).await?;

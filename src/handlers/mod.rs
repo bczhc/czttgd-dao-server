@@ -3,6 +3,7 @@ use std::sync::Mutex;
 
 use axum::response::IntoResponse;
 use axum::Router;
+use log::{debug, info};
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use sqlx::mysql::MySqlRow;
@@ -44,6 +45,7 @@ pub fn router() -> Router {
 }
 
 pub async fn list_routes() -> impl IntoResponse {
+    info!("Route: /routes");
     let mut content = String::new();
     use fmt::Write;
     for &line in &*mutex_lock!(COLLECTED_ROUTES) {

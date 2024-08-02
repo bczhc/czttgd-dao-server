@@ -1,10 +1,12 @@
 use axum::response::IntoResponse;
 use axum::Extension;
+use log::info;
 
 use crate::handlers::{handle_errors, BreakCause, Breakpoint};
 use crate::{api_ok, include_sql, ApiContext};
 
 pub async fn all_break_reasons(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
+    info!("Route: /break/causes");
     let db = &api_context.db;
 
     let result: anyhow::Result<()> = try {
@@ -17,6 +19,7 @@ pub async fn all_break_reasons(Extension(api_context): Extension<ApiContext>) ->
 }
 
 pub async fn all_breakpoints(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
+    info!("Route: /break/points");
     let db = &api_context.db;
 
     let result: anyhow::Result<()> = try {

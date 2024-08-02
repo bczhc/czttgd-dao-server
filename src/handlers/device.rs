@@ -1,6 +1,7 @@
 use axum::response::{IntoResponse, Response};
 use axum::{debug_handler, extract, Extension};
 use futures::{StreamExt, TryStreamExt};
+use log::info;
 use serde::Deserialize;
 use sqlx::Row;
 
@@ -16,6 +17,7 @@ pub async fn devices(
     extract::Path(stage): extract::Path<Path>,
     extension: Extension<ApiContext>,
 ) -> Response {
+    info!("Route: /stage/:stage/devices");
     let stage = stage.stage;
 
     let result: anyhow::Result<()> = try {
