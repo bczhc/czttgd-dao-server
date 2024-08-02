@@ -39,4 +39,5 @@ WHERE m.stage = ?
         OR CONCAT(devicecode, '号机台') LIKE CONCAT('%', ?, '%')
         OR i.memo LIKE CONCAT('%', ?, '%')
     )
+ORDER BY machinenumber DESC
 LIMIT ? OFFSET ?
