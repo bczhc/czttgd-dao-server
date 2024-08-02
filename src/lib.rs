@@ -5,6 +5,7 @@
 use std::io;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::config::Config;
 use axum::response::IntoResponse;
@@ -125,3 +126,10 @@ pub macro include_sql($name:literal) {
 
 // their SQL uses `INT` but not `INT UNSIGNED`
 pub type RefId = i32;
+
+pub fn timestamp_secs() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_secs()
+}

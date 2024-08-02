@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Executor, FromRow, MySql, Row};
 use sqlx::mysql::MySqlArguments;
 
-use crate::{api_ok, ApiContext, check_from_row, include_sql, MySqlPool};
+use crate::{api_ok, ApiContext, check_from_row, include_sql, MySqlPool, timestamp_secs};
 use crate::handlers::{BreakCause, Breakpoint, counter, handle_errors, InspectionDetails, InspectionForm, InspectionSummary, User};
 
 /// timestamp+<counter>
@@ -18,10 +18,7 @@ use crate::handlers::{BreakCause, Breakpoint, counter, handle_errors, Inspection
 async fn generate_inspection_id(db: &MySqlPool) -> anyhow::Result<i64> {
     let id_num = counter::increase(db).await?;
 
-    let timestamp = SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap()
-        .as_secs();
+    let timestamp = timestamp_secs();
     let id = format!("{timestamp}{:03}", id_num).parse::<i64>()?;
     Ok(id)
 }

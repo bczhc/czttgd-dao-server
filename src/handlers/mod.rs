@@ -19,6 +19,10 @@ pub mod inspection;
 mod users;
 mod counter;
 
+#[path = "log.rs"]
+mod log_router;
+mod ping;
+
 static COLLECTED_ROUTES: Lazy<Mutex<Vec<&'static str>>> =
     Lazy::new(|| Mutex::new(Default::default()));
 
@@ -32,6 +36,7 @@ macro add_route($router:expr, $t:tt $path:literal, $f:expr) {
 pub fn router() -> Router {
     let mut router = Router::new();
     add_route!(router, GET "/routes", list_routes);
+    add_route!(router, GET "/ping", ping::ping);
     add_route!(router, GET "/stage/:stage/devices", device::devices);
     add_route!(router, GET "/users", users::all_users);
     add_route!(router, GET "/break/causes", breakpoint::all_break_reasons);
@@ -41,6 +46,7 @@ pub fn router() -> Router {
     add_route!(router, GET "/inspection/:id/details", inspection::query_details);
     add_route!(router, PUT "/inspection/:id", inspection::update);
     add_route!(router, GET "/inspection/count", inspection::count);
+    add_route!(router, POST "/log", log_router::upload_log);
     router
 }
 

@@ -3,17 +3,17 @@
 use std::net::SocketAddr;
 use std::sync::Arc;
 
-use axum::routing::get;
 use axum::{Extension, Form, Router};
+use axum::extract::DefaultBodyLimit;
+use axum::routing::get;
 use clap::Parser;
 use log::{debug, info};
 use sqlx::MySqlPool;
 
 use czttgd_dao::{
-    handlers, mutex_lock, set_up_logging, ApiContext, ApiContextInner, Args, ARGS, CONFIG,
-    DATABASE_NAME,
+    ApiContext, ApiContextInner, Args, ARGS, CONFIG, DATABASE_NAME, handlers, mutex_lock,
+    set_up_logging,
 };
-
 use czttgd_dao::config::get_config;
 use czttgd_dao::handlers::{inspection, InspectionForm};
 
@@ -58,9 +58,7 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn router() -> Router {
-    Router::new()
-        .route("/echo", get(handlers::demo::echo))
-        .nest("/", handlers::router())
+    Router::new().nest("/", handlers::router())
 }
 
 async fn start_axum(api_context: ApiContext) -> anyhow::Result<()> {
@@ -69,7 +67,9 @@ async fn start_axum(api_context: ApiContext) -> anyhow::Result<()> {
     let addr = SocketAddr::new("0.0.0.0".parse().unwrap(), listen_port);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
-    let router = router().layer(Extension(api_context));
+    let router = router()
+        .layer(Extension(api_context))
+        .layer(DefaultBodyLimit::max(1048576 * 50));
     info!("Server started on {}", addr);
     axum::serve(listener, router).await?;
     Ok(())
