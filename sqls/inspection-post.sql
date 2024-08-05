@@ -8,6 +8,7 @@ INSERT INTO tt_inspect
  twbatchcode,
  trbatchcode,
  dlwarehouse,
+ tgproducttime,
  breakflag,
  breakpointa,
  breakpointb,
@@ -16,4 +17,4 @@ INSERT INTO tt_inspect
  breakreasona,
  billflag,
  id)
-    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+    VALUE (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)

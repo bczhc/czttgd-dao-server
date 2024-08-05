@@ -1,16 +1,21 @@
 use std::time::{SystemTime, UNIX_EPOCH};
+use anyhow::anyhow;
 
-use axum::{Extension, Form};
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
+use axum::{Extension, Form};
 use futures::TryStreamExt;
 use log::{debug, info};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
-use sqlx::{Executor, FromRow, MySql, Row};
 use sqlx::mysql::MySqlArguments;
+use sqlx::{Executor, FromRow, MySql, Row};
 
-use crate::{api_ok, ApiContext, check_from_row, include_sql, MySqlPool, timestamp_secs};
-use crate::handlers::{BreakCause, Breakpoint, counter, handle_errors, InspectionDetails, InspectionForm, InspectionSummary, User};
+use crate::handlers::{
+    counter, handle_errors, BreakCause, Breakpoint, InspectionDetails, InspectionForm,
+    InspectionSummary, User,
+};
+use crate::{api_ok, check_from_row, include_sql, timestamp_secs, ApiContext, MySqlPool};
 
 /// timestamp+<counter>
 ///
@@ -36,7 +41,7 @@ pub async fn post_new(
         let id = generate_inspection_id(db).await?;
 
         let query = sqlx::query(include_sql!("inspection-post"));
-        let query = bind_form(query, form);
+        let query = bind_form(query, form)?;
         // bind: id
         let query = query.bind(id);
         db.execute(query).await?;
@@ -49,7 +54,7 @@ pub async fn post_new(
 fn bind_form(
     query: sqlx::query::Query<MySql, MySqlArguments>,
     form: InspectionForm,
-) -> sqlx::query::Query<MySql, MySqlArguments> {
+) -> anyhow::Result<sqlx::query::Query<MySql, MySqlArguments>> {
     // They use `char(1)`. According the conversion,
     // we must insert a `&str`.
     let break_flag = match form.break_flag {
@@ -57,7 +62,7 @@ fn bind_form(
         false => "0",
     };
 
-    return query
+    return Ok(query
         .bind(form.creator)
         .bind(form.device_code)
         .bind(form.creation_time)
@@ -67,12 +72,13 @@ fn bind_form(
         .bind(form.wire_batch_code)
         .bind(form.stick_batch_code)
         .bind(form.warehouse)
+        .bind(form.product_time)
         .bind(break_flag)
         .bind(form.breakpoint_a)
         .bind(form.breakpoint_b)
         .bind(form.comments)
         .bind(form.device_category)
-        .bind(form.break_cause_a);
+        .bind(form.break_cause_a));
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -172,7 +178,7 @@ pub async fn update(
 
     let result: anyhow::Result<()> = try {
         let query = sqlx::query(include_sql!("inspection-update"));
-        let query = bind_form(query, form);
+        let query = bind_form(query, form)?;
         // WHERE id = ?
         let query = query.bind(id);
         query.execute(db).await?;
@@ -182,15 +188,15 @@ pub async fn update(
 }
 
 #[axum::debug_handler]
-pub async fn count(
-    Extension(api_context): Extension<ApiContext>,
-) -> impl IntoResponse {
+pub async fn count(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
     info!("Route: /inspection/count");
     let db = &api_context.db;
     let r: anyhow::Result<()> = try {
-        let r = sqlx::query(include_sql!("inspection-count")).fetch_one(db).await?;
+        let r = sqlx::query(include_sql!("inspection-count"))
+            .fetch_one(db)
+            .await?;
         let count: i64 = r.try_get("c")?;
-        
+
         return api_ok!(count);
     };
     handle_errors!(r)

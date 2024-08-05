@@ -82,6 +82,7 @@ pub struct InspectionForm {
     /// 初检原因
     pub break_cause_a: RefId,
     pub comments: Option<String>,
+    pub product_time: Option<String>,
 }
 
 #[derive(Serialize, Debug, sqlx::FromRow)]
