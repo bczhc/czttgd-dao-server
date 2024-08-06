@@ -160,6 +160,8 @@ pub struct Breakpoint {
     id: i32,
     #[sqlx(rename = "bp_name")]
     breakpoint: Option<String>,
+    #[sqlx(rename = "bp_enable_state")]
+    enable_state: i32,
 }
 
 #[derive(sqlx::FromRow, Debug, Serialize)]
@@ -202,6 +204,7 @@ impl Breakpoint {
         Ok(Self {
             id: row.try_get(format!("{prefix}_bp_id").as_str())?,
             breakpoint: row.try_get(format!("{prefix}_bp_name").as_str())?,
+            enable_state: row.try_get(format!("{prefix}_bp_enable_state").as_str())?,
         })
     }
 }
