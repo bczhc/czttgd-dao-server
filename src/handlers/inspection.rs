@@ -68,6 +68,7 @@ fn bind_form(
         .bind(form.creation_time)
         .bind(form.product_spec)
         .bind(form.wire_number)
+        .bind(form.wire_type)
         .bind(form.break_spec)
         .bind(form.wire_batch_code)
         .bind(form.stick_batch_code)
@@ -104,7 +105,7 @@ pub async fn search(
     let r: anyhow::Result<()> = try {
         let mut query = sqlx::query(include_sql!("inspection-search"));
         query = query.bind(api_query.stage as i32);
-        for _ in 0..10 {
+        for _ in 0..11 {
             query = query.bind(&api_query.filter);
         }
         // limit, offset

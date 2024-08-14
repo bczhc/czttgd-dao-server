@@ -38,6 +38,7 @@ WHERE m.stage = ?
         OR REPLACE(i.creationtime, '-0', '.') LIKE CONCAT('%', ?, '%')
         OR CONCAT(devicecode, '号机台') LIKE CONCAT('%', ?, '%')
         OR i.memo LIKE CONCAT('%', ?, '%')
+        OR i.wiretype LIKE CONCAT('%', ?, '%')
     )
 ORDER BY id DESC
 LIMIT ? OFFSET ?
