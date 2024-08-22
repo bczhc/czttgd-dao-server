@@ -81,7 +81,7 @@ pub struct InspectionForm {
     /// 非拉丝池 ref
     pub breakpoint_a: Option<RefId>,
     /// 初检原因
-    pub break_cause_a: RefId,
+    pub break_cause_a: Option<RefId>,
     pub comments: Option<String>,
     pub product_time: Option<String>,
 }
