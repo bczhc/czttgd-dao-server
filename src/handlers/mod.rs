@@ -47,6 +47,7 @@ pub fn router() -> Router {
     add_route!(router, PUT "/inspection/:id", inspection::update);
     add_route!(router, GET "/inspection/count", inspection::count);
     add_route!(router, POST "/log", log_router::upload_log);
+    add_route!(router, GET "/inspection/updatecounter", inspection::update_counter);
     router
 }
 

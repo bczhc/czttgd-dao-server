@@ -133,3 +133,9 @@ pub fn timestamp_secs() -> u64 {
         .unwrap()
         .as_secs()
 }
+
+/// On data insertion or update, increase this value
+/// 
+/// On the frontend web, query this value periodically, and if this
+/// changes, update the front-end's list data.
+pub static UPDATE_COUNTER: Lazy<Mutex<u32>> = Lazy::new(|| Mutex::new(0));

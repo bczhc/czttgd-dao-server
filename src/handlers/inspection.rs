@@ -3,7 +3,7 @@ use anyhow::anyhow;
 
 use axum::extract::{Path, Query};
 use axum::response::IntoResponse;
-use axum::{Extension, Form};
+use axum::{Extension, Form, Json};
 use futures::TryStreamExt;
 use log::{debug, info};
 use regex::Regex;
@@ -15,7 +15,7 @@ use crate::handlers::{
     counter, handle_errors, BreakCause, Breakpoint, InspectionDetails, InspectionForm,
     InspectionSummary, User,
 };
-use crate::{api_ok, check_from_row, include_sql, timestamp_secs, ApiContext, MySqlPool};
+use crate::{api_ok, check_from_row, include_sql, mutex_lock, timestamp_secs, ApiContext, MySqlPool, UPDATE_COUNTER};
 
 /// timestamp+<counter>
 ///
@@ -45,6 +45,8 @@ pub async fn post_new(
         // bind: id
         let query = query.bind(id);
         db.execute(query).await?;
+        
+        *mutex_lock!(UPDATE_COUNTER) += 1;
 
         return api_ok!(id);
     };
@@ -183,6 +185,7 @@ pub async fn update(
         // WHERE id = ?
         let query = query.bind(id);
         query.execute(db).await?;
+        *mutex_lock!(UPDATE_COUNTER) += 1;
         return api_ok!(());
     };
     handle_errors!(result)
@@ -201,4 +204,9 @@ pub async fn count(Extension(api_context): Extension<ApiContext>) -> impl IntoRe
         return api_ok!(count);
     };
     handle_errors!(r)
+}
+
+#[axum::debug_handler]
+pub async fn update_counter(Extension(api_context): Extension<ApiContext>) -> impl IntoResponse {
+    Json(*UPDATE_COUNTER.lock().unwrap())
 }
